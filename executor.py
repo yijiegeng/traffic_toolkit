@@ -130,7 +130,7 @@ def visit_fast(prefix, url, method=Method.GET, repeat_num=1, thread_num=5):
 
 
 def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile_path=None):
-    create_temp()
+    dir_name = create_temp()
     if func_name is None:
         logger = set_logger(inspect.stack()[0][3])
         mode_name = "Env-slow"
@@ -153,13 +153,13 @@ def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile
                 try:
                     if func_name is None:
                         method = Method.GET      # env mod
-                        code, waf_ip, _, _ = curl_sender(prefix, url, ip)  # GET
+                        code, waf_ip, _, _ = curl_sender(dir_name, prefix, url, ip)  # GET
                     elif postfile_path is None:  # get_file-env mod
                         method = Method.GET
-                        code, waf_ip, response_size, _ = curl_sender(prefix, url, ip)  # GET
+                        code, waf_ip, response_size, _ = curl_sender(dir_name, prefix, url, ip)  # GET
                     else:                        # post_file-env mod
                         method = Method.POST
-                        code, waf_ip, response_size, request_size = curl_sender(prefix, url, ip,
+                        code, waf_ip, response_size, request_size = curl_sender(dir_name, prefix, url, ip,
                                                                                 postfile_path=postfile_path)  # POST
 
                     logger.info(info_handler(url, code, index,
@@ -175,7 +175,7 @@ def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile
                                                region=regions[int(ip_pos / 2)]))
                 finally:
                     bar()
-    delete_temp()
+    delete_temp(dir_name)
 
 
 def visit_env_fast(prefix, url, env_name, repeat_num=1, thread_num=5):
@@ -187,7 +187,7 @@ def visit_env_fast(prefix, url, env_name, repeat_num=1, thread_num=5):
     <multithread.threads_run> parameter:
         prefix, request_list=[], repeat_num=1, thread_num=10, logger=None
     """
-    create_temp()
+    dir_name = create_temp()
     logger = set_logger(inspect.stack()[0][3])
     mode_name = "Env-fast"
     logger.info("<%s> mode, Domain: %s, repeat [%s] times, with [%s] threads, runs on [%s] env regions"
@@ -198,8 +198,8 @@ def visit_env_fast(prefix, url, env_name, repeat_num=1, thread_num=5):
     for ip_pos, ip in enumerate(ips):
         node = multithread.requestNode(url, src_ip=ip, region=regions[int(ip_pos / 2)], env_mode=True)
         nodelist.append(node)
-    multithread.threads_run(prefix, request_list=nodelist, repeat_num=repeat_num, thread_num=thread_num, logger=logger)
-    delete_temp()
+    multithread.threads_run(prefix, request_list=nodelist, repeat_num=repeat_num, thread_num=thread_num, logger=logger, temp_dir=dir_name)
+    delete_temp(dir_name)
 
 
 def get_file(prefix, get_size=1, repeat_num=1):

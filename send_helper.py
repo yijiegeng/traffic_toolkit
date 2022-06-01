@@ -34,15 +34,16 @@ def requests_sender(prefix, url, para="", method=Method.GET, headers={}, postfil
     return code, waf_ip, int(response_size), int(request_size)
 
 
-def curl_sender(prefix, url, ip, filename=None, postfile_path=None):
+def curl_sender(temp_dir, prefix, url, ip, filename=None, postfile_path=None):
+    if temp_dir is None: temp_dir = "temp"
     host = get_host(prefix)
-    header_file = "temp/header.txt"
-    error_file = "temp/error.txt"
-    output_file = "temp/output.txt"
+    header_file = temp_dir + "/header.txt"
+    error_file = temp_dir + "/error.txt"
+    output_file = temp_dir + "/output.txt"
     if filename is not None:
-        output_file = "temp/%s_output.txt" % filename
-        header_file = "temp/%s_header.txt" % filename
-        error_file = "temp/%s_error.txt" % filename
+        output_file = temp_dir + "/%s_output.txt" % filename
+        header_file = temp_dir + "/%s_header.txt" % filename
+        error_file = temp_dir + "/%s_error.txt" % filename
 
     if postfile_path is None:
         # GET
@@ -116,13 +117,20 @@ def get_host(prefix):
 
 
 def create_temp():
-    if not os.path.isdir("temp"):
-        os.makedirs("temp")
+    suffix = 1
+    dir_name = "temp_" + str(suffix)
+    while os.path.exists(dir_name):
+        suffix += 1
+        dir_name = "temp_" + str(suffix)
+    os.makedirs(dir_name)
+    return dir_name
 
 
-def delete_temp():
-    dir_path = "temp"
+def delete_temp(dir_name):
+    if not os.path.exists(dir_name):
+        print(dir_name, "not exist!")
+        return
     try:
-        shutil.rmtree(dir_path)
+        shutil.rmtree(dir_name)
     except OSError as e:
         raise e

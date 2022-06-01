@@ -25,7 +25,7 @@ class requestNode:
         self.env_mode = env_mode
 
 
-def work(thread_name, prefix, work_queue, finish_queue, initial_size, logger):
+def work(thread_name, prefix, work_queue, finish_queue, initial_size, logger, temp_dir):
     if thread_name == "Thread-0":
         with alive_bar(initial_size, manual=True) as bar:
             while True:
@@ -40,10 +40,10 @@ def work(thread_name, prefix, work_queue, finish_queue, initial_size, logger):
                 # print("Exiting ", thread_name)
                 return
             else:
-                crawler(thread_name, prefix, work_queue, finish_queue, logger)
+                crawler(temp_dir, thread_name, prefix, work_queue, finish_queue, logger)
 
 
-def crawler(thread_name, prefix, work_queue, finish_queue, logger):
+def crawler(temp_dir, thread_name, prefix, work_queue, finish_queue, logger):
     request = work_queue.get()
     ### required field
     url = request.url
@@ -78,7 +78,7 @@ def crawler(thread_name, prefix, work_queue, finish_queue, logger):
                                                  para=para,
                                                  headers=headers)
         else:               # used for curl request
-            code, waf_ip, _, _ = curl_sender(prefix, url, src_ip,
+            code, waf_ip, _, _ = curl_sender(temp_dir, prefix, url, src_ip,
                                              filename=thread_name)
 
         logger.info(info_handler(url, code, index,
@@ -97,7 +97,7 @@ def crawler(thread_name, prefix, work_queue, finish_queue, logger):
         finish_queue.put(True)
 
 
-def threads_run(prefix, request_list=[], repeat_num=1, thread_num=10, logger=None):
+def threads_run(prefix, request_list=[], repeat_num=1, thread_num=10, logger=None, temp_dir=None):
     if logger is None: logger = set_logger("multithread")
     start = time.time()
 
@@ -109,10 +109,10 @@ def threads_run(prefix, request_list=[], repeat_num=1, thread_num=10, logger=Non
             work_queue.put(requestNode(repeat_id=i))  # default url = "/"
         else:
             temp = copy.deepcopy(request_list)
-        for node in temp:  # put the request_node to queue
-            if isinstance(node, str): node = requestNode(url=node)  # in case node is a str (url)
-            node.repeat_id = i
-            work_queue.put(node)
+            for node in temp:  # put the request_node to queue
+                if isinstance(node, str): node = requestNode(url=node)  # in case node is a str (url)
+                node.repeat_id = i
+                work_queue.put(node)
     initial_size = work_queue.qsize()
 
     # create threads list
@@ -121,7 +121,8 @@ def threads_run(prefix, request_list=[], repeat_num=1, thread_num=10, logger=Non
         thread_list.append('Thread-' + str(i))
     threads = []  # thread pool
     for tName in thread_list:  # create new thread
-        thread = threading.Thread(target=work, args=(tName, prefix, work_queue, finish_queue, initial_size, logger))
+        thread = threading.Thread(target=work, args=(tName, prefix, work_queue, finish_queue,
+                                                     initial_size, logger, temp_dir))
         threads.append(thread)
 
     for t in threads:  # waiting for all threads start

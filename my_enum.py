@@ -18,4 +18,3 @@ def enum_standardize(candidate):
         if candidate == str.lower(method.value):
             return method
     raise Exception("[%s] Method Not Found!" % candidate)
-

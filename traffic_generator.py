@@ -4,7 +4,7 @@ import executor
 
 
 def main():
-    usage = usage = "usage: %prog [options] arg (refer %prog --help)"
+    usage = "usage: %prog [options] arg (refer %prog --help)"
     parser = OptionParser(usage=usage)
     parser.add_option("-d", "--domain", action="store", dest="domain",
                       help="Domain name (required!)")
