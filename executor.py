@@ -1,5 +1,6 @@
 import os.path
 import sys
+import time
 import urllib3
 import json
 import inspect
@@ -28,7 +29,7 @@ attack_url_list = ['/bot',
                    '/jsfunction?a=function test(){A=alert;A(1)}']
 
 
-def visit_attack_slow(prefix, repeat_num=1):
+def visit_attack_slow(prefix, repeat_num=1, sleep=0):
     logger = set_logger(inspect.stack()[0][3])
     mode_name = "Attack-slow"
     logger.info("<%s> mode, Domain: %s, repeat [%s] times" % (mode_name, prefix, repeat_num))
@@ -43,12 +44,13 @@ def visit_attack_slow(prefix, repeat_num=1):
 
                 try:
                     code, waf_ip, _, _ = requests_sender(prefix, url, headers=headers)  # GET
-                    logger.info(info_handler(url, code, index))
+                    logger.info(info_handler(url, code, index, sleep))
                 except Exception as e:
                     # traceback.print_exc()
-                    logger.error(error_handler(url, e, index))
+                    logger.error(error_handler(url, e, index, sleep))
                 finally:
                     bar()
+                    time.sleep(sleep)
 
 
 def visit_attack_fast(prefix, repeat_num=1, thread_num=5):
@@ -71,7 +73,7 @@ def visit_attack_fast(prefix, repeat_num=1, thread_num=5):
     multithread.threads_run(prefix, request_list=nodelist, repeat_num=repeat_num, thread_num=thread_num, logger=logger)
 
 
-def visit_slow(prefix, url, method=Method.GET, repeat_num=1, func_name=None, postfile_path=None):
+def visit_slow(prefix, url, method=Method.GET, repeat_num=1, sleep=0, func_name=None, postfile_path=None):
     if func_name is None:
         logger = set_logger(inspect.stack()[0][3])
         mode_name = "Normal"
@@ -98,17 +100,18 @@ def visit_slow(prefix, url, method=Method.GET, repeat_num=1, func_name=None, pos
                     code, waf_ip, response_size, request_size = requests_sender(prefix, url,
                                                                                 method=Method.POST,
                                                                                 postfile_path=postfile_path)  # POST
-                logger.info(info_handler(url, code, index,
+                logger.info(info_handler(url, code, index, sleep,
                                          method=method,
                                          waf_ip=waf_ip,
                                          response_size=response_size,
                                          request_size=request_size))
             except Exception as e:
                 # traceback.print_exc()
-                logger.error(error_handler(url, e, index,
+                logger.error(error_handler(url, e, index, sleep,
                                            method=method))
             finally:
                 bar()
+                time.sleep(sleep)
 
 
 def visit_fast(prefix, url, method=Method.GET, repeat_num=1, thread_num=5):
@@ -129,7 +132,7 @@ def visit_fast(prefix, url, method=Method.GET, repeat_num=1, thread_num=5):
     multithread.threads_run(prefix, request_list=[node], repeat_num=repeat_num, thread_num=thread_num, logger=logger)
 
 
-def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile_path=None):
+def visit_env_slow(prefix, url, env_name, repeat_num=1, sleep=0, func_name=None, postfile_path=None):
     dir_name = create_temp()
     if func_name is None:
         logger = set_logger(inspect.stack()[0][3])
@@ -162,7 +165,7 @@ def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile
                         code, waf_ip, response_size, request_size = curl_sender(dir_name, prefix, url, ip,
                                                                                 postfile_path=postfile_path)  # POST
 
-                    logger.info(info_handler(url, code, index,
+                    logger.info(info_handler(url, code, index, sleep,
                                              method=method,
                                              waf_ip=waf_ip,
                                              region=regions[int(ip_pos / 2)],
@@ -170,11 +173,12 @@ def visit_env_slow(prefix, url, env_name, repeat_num=1, func_name=None, postfile
                                              request_size=request_size))
                 except Exception as e:
                     # traceback.print_exc()
-                    logger.error(error_handler(url, e, index,
+                    logger.error(error_handler(url, e, index, sleep,
                                                method=method,
                                                region=regions[int(ip_pos / 2)]))
                 finally:
                     bar()
+                    time.sleep(sleep)
     delete_temp(dir_name)
 
 
@@ -202,29 +206,29 @@ def visit_env_fast(prefix, url, env_name, repeat_num=1, thread_num=5):
     delete_temp(dir_name)
 
 
-def get_file(prefix, get_size=1, repeat_num=1):
+def get_file(prefix, get_size=1, repeat_num=1, sleep=0):
     url = "/file?size=%s&unit=mb" % get_size
-    visit_slow(prefix, url, repeat_num=repeat_num, func_name=inspect.stack()[0][3])
+    visit_slow(prefix, url, repeat_num=repeat_num, sleep=sleep, func_name=inspect.stack()[0][3])
 
 
-def get_file_env(prefix, env_name, get_size=1, repeat_num=1):
+def get_file_env(prefix, env_name, get_size=1, repeat_num=1, sleep=0):
     url = "/file?size=%s&unit=mb" % get_size
-    visit_env_slow(prefix, url, env_name, repeat_num=repeat_num, func_name=inspect.stack()[0][3])
+    visit_env_slow(prefix, url, env_name, repeat_num=repeat_num, sleep=sleep, func_name=inspect.stack()[0][3])
 
 
-def post_file(prefix, post_size=1, repeat_num=1):
+def post_file(prefix, post_size=1, repeat_num=1, sleep=0):
     url = "/file?size=%s&unit=mb" % post_size
     post_file_path = "file.txt"
     creat_file(post_file_path, post_size, "mb")
-    visit_slow(prefix, url, repeat_num=repeat_num, func_name=inspect.stack()[0][3], postfile_path=post_file_path)
+    visit_slow(prefix, url, repeat_num=repeat_num, sleep=sleep, func_name=inspect.stack()[0][3], postfile_path=post_file_path)
     delete_file(post_file_path)
 
 
-def post_file_env(prefix, env_name, post_size=1, repeat_num=1):
+def post_file_env(prefix, env_name, post_size=1, repeat_num=1, sleep=0):
     url = "/file?size=%s&unit=mb" % post_size
     post_file_path = "file.txt"
     creat_file(post_file_path, post_size, "mb")
-    visit_env_slow(prefix, url, env_name, repeat_num=repeat_num, func_name=inspect.stack()[0][3], postfile_path=post_file_path)
+    visit_env_slow(prefix, url, env_name, repeat_num=repeat_num, sleep=sleep, func_name=inspect.stack()[0][3], postfile_path=post_file_path)
     delete_file(post_file_path)
 
 
