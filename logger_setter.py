@@ -37,9 +37,11 @@ def set_logger(log_name):
     return logger
 
 
-def helper(index, qsize, thread_name, url, region):
+def helper(index, sleep, qsize, thread_name, url, region):
     # process general list
     general_list = ["#%03d" % index]
+    if sleep != 0:
+        general_list.append("sleep=%s" % sleep)
     if qsize is not None:
         general_list.append("qsize=%03d" % qsize)
     if thread_name is not None:
@@ -57,9 +59,9 @@ def helper(index, qsize, thread_name, url, region):
     return general_list, other_list
 
 
-def info_handler(url, code, index, qsize=None, thread_name=None, method=Method.GET, region=None,
+def info_handler(url, code, index, sleep=0, qsize=None, thread_name=None, method=Method.GET, region=None,
                  waf_ip=None, request_size=None, response_size=None):
-    (general, other) = helper(index, qsize, thread_name, url, region)
+    (general, other) = helper(index, sleep, qsize, thread_name, url, region)
     if waf_ip is not None:
         other.append("WAF_ip=%s" % waf_ip)
     if request_size is not None:
@@ -76,8 +78,8 @@ def info_handler(url, code, index, qsize=None, thread_name=None, method=Method.G
     return log
 
 
-def error_handler(url, error_msg, index, qsize=None, thread_name=None, method=Method.GET, region=None):
-    (general, other) = helper(index, qsize, thread_name, url, region)
+def error_handler(url, error_msg, index, sleep=0, qsize=None, thread_name=None, method=Method.GET, region=None):
+    (general, other) = helper(index, sleep, qsize, thread_name, url, region)
     other.append("msg: %s" % error_msg)
     state = "[%s]" % method.value
     log = (state + ", ".join(general)) + " - " + (", ".join(other))
