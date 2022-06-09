@@ -1,6 +1,7 @@
 from optparse import OptionParser
-from my_enum import Method, enum_standardize
-import executor
+from repo import my_enum
+from handler import executor
+from helper import validator, os_validator
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
     parser.add_option("-a", "--attack", action="store_true", dest="attack",
                       help="attack mode: Send attack requests. (note: send 13 attacks/time)")
     parser.add_option("-e", "--env", action="store", dest="env",
-                      help="env mode: which environment region you wanna test? traffic will go through different region")
+                      help="env mode: traffic will go through different regions in this env")
     parser.add_option("-g", "--gfile", action="store", dest="get_size", type="int",
                       help="send_file mode: send a file, unit is MB")
     parser.add_option("-p", "--pfile", action="store", dest="post_size", type="int",
@@ -32,13 +33,13 @@ def main():
     # validation for input
     if options.domain is None:
         parser.error("Domain is required!")
-    conflict = check_input(options)
+    conflict = validator.check_input(options)
     if len(conflict) > 0:
         parser.error('[' + ",".join(conflict) + "] are mutually exclusive! Please check <--help> for usage")
 
     method = options.method
     try:
-        method = enum_standardize(options.method)
+        method = my_enum.method_standardize(options.method)
     except Exception as e:
         parser.error(e)
 
@@ -46,8 +47,8 @@ def main():
 
 
 def execute(options, method):
-    domain = domain_standardize(options.domain)
-    url = url_standardize(options.url)
+    domain = validator.domain_standardize(options.domain)
+    url = validator.url_standardize(options.url)
     repeat_num = options.repeat
     sleep = options.sleep
     thread_num = options.fast
@@ -56,7 +57,7 @@ def execute(options, method):
     get_size = options.get_size
     post_size = options.post_size
 
-    if post_size is not None: method = Method.POST
+    if post_size is not None: method = my_enum.Method.POST
     if sleep is None: sleep = 0
     hint = ">>>>>>>> %s [%s]\n>>>>>>>> repeat [%s] times" % (domain + url, method.value, repeat_num)
     if sleep != 0:
@@ -87,11 +88,11 @@ def execute(options, method):
 
     ####### env-slow mod #######
     elif (env_name is not None) and (thread_num is None) and (get_size is None) and (post_size is None):
-        executor.visit_env_slow(domain, url, env_name, repeat_num=repeat_num, sleep=sleep)
+        executor.visit_env_slow(domain, url=url, env_name=env_name, repeat_num=repeat_num, sleep=sleep)
 
     ####### env-fast mod #######
     elif (env_name is not None) and (thread_num is not None):
-        executor.visit_env_fast(domain, url, env_name, repeat_num=repeat_num, thread_num=thread_num)
+        executor.visit_env_fast(domain, url=url, env_name=env_name, repeat_num=repeat_num, thread_num=thread_num)
 
     ####### get_file mod #######
     elif (get_size is not None) and (env_name is None):
@@ -103,70 +104,21 @@ def execute(options, method):
 
     ####### env-get_file mod #######
     elif (get_size is not None) and (env_name is not None):
-        executor.get_file_env(domain, env_name, get_size=get_size, repeat_num=repeat_num, sleep=sleep)
+        executor.get_file_env(domain, env_name=env_name, get_size=get_size, repeat_num=repeat_num, sleep=sleep)
 
     ####### env-post_file mod #######
     elif (post_size is not None) and (env_name is not None):
-        executor.post_file_env(domain, env_name, post_size=post_size, repeat_num=repeat_num, sleep=sleep)
+        executor.post_file_env(domain, env_name=env_name, post_size=post_size, repeat_num=repeat_num, sleep=sleep)
 
     ####### fast mod #######
     elif options.fast is not None:
-        executor.visit_fast(domain, url, method=method, repeat_num=repeat_num, thread_num=thread_num)
+        executor.visit_fast(domain, url=url, method=method, repeat_num=repeat_num, thread_num=thread_num)
 
     ####### normal mod #######
     else:
-        executor.visit_slow(domain, url, method=method, repeat_num=repeat_num, sleep=sleep)
+        executor.visit_slow(domain, url=url, method=method, repeat_num=repeat_num, sleep=sleep)
 
-
-def check_input(options):
-    conflict_map = {'-a': {'-e', '-g', '-p', '-m'},
-                    '-g': {'-a', '-f', '-p', '-m'},
-                    '-p': {'-a', '-f', '-g', '-m'},
-                    '-m': {'-a', '-g', '-p', '-e'},
-                    '-f': {'-s', '-g', '-p'},
-                    '-e': {'-a', '-m'},
-                    '-s': {'-f'}
-                    }
-
-    input_set = set()
-    if options.attack:
-        input_set.add("-a")
-    if options.get_size is not None:
-        input_set.add("-g")
-    if options.post_size is not None:
-        input_set.add("-p")
-    if options.method is not None:
-        input_set.add("-m")
-    if options.fast is not None:
-        input_set.add("-f")
-    if options.env is not None:
-        input_set.add("-e")
-    if options.sleep is not None:
-        input_set.add("-s")
-
-    conflict = set()
-    for para in input_set:
-        conflict_candi = input_set & conflict_map[para]
-        if len(conflict_candi) > 0:
-            conflict.add(para)
-            conflict = conflict | conflict_candi
-    return conflict
-
-
-def domain_standardize(s):  # add 'https://'
-    s = s.strip()
-    if not (s.startswith('http://') or s.startswith('https://')):
-        s = 'https://' + s
-    if s.endswith('/'):
-        s = s[:-1]
-    return s
-
-
-def url_standardize(s):  # add '/'
-    s = s.strip()
-    if not s.startswith('/'):
-        s = '/' + s
-    return s
+    os_validator.delete_dir("cache")
 
 
 if __name__ == "__main__":
