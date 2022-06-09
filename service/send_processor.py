@@ -7,8 +7,8 @@ from repo import my_enum, my_node
 
 
 def processor(logger, prefix, work_queue,
-              finish_queue=None, thread_name=None,
-              sleep=0, env=False, getfile=False, postfile=False,
+              finish_queue=None, thread_name=None, sleep=0,
+              attack=False, env=False, getfile=False, postfile=False,
               temp_dir=None, postfile_path=None):
     """
     class requestNode:
@@ -75,14 +75,19 @@ def processor(logger, prefix, work_queue,
                 code, waf_ip, _, _ = curl_sender(
                     logger, temp_dir, prefix, url, waf_ip, thread_name=thread_name)
 
-        logger.info(info_handler(url, code, index, sleep,
-                                 qsize=qsize,
-                                 thread_name=thread_name,
-                                 method=method,
-                                 region=region,
-                                 waf_ip=waf_ip,
-                                 response_size=response_size,
-                                 request_size=request_size))
+        info_log = info_handler(url, code, index, sleep,
+                                qsize=qsize,
+                                thread_name=thread_name,
+                                method=method,
+                                region=region,
+                                waf_ip=waf_ip,
+                                response_size=response_size,
+                                request_size=request_size)
+
+        if attack and str(code) != "403":
+            logger.warning(info_log)
+        else:
+            logger.info(info_log)
     except Exception as e:
         logger.warning(error_handler(url, e, index, sleep,
                                      qsize=qsize,
@@ -97,8 +102,9 @@ def processor(logger, prefix, work_queue,
 
 
 def creat_msg_queue(repeat_num, request_list):
-    work_queue = queue.Queue(1000)  # set queue size
-    finish_queue = queue.Queue(1000)
+    qsize = repeat_num * (len(request_list) if request_list is not None else 1)
+    work_queue = queue.Queue(qsize)  # set queue size
+    finish_queue = queue.Queue(qsize)
     for i in range(repeat_num):
         if request_list is None or len(request_list) == 0:
             work_queue.put(my_node.requestNode(repeat_id=i, url="/"))  # default url = "/"

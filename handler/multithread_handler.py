@@ -14,22 +14,22 @@ def counter(finish_queue, initial_size, bar=None):
             return
 
 
-def worker(logger, prefix, work_queue, finish_queue, env, thread_name, temp_dir):
+def worker(logger, prefix, work_queue, finish_queue, attack, env, thread_name, temp_dir):
     while True:
         if work_queue.empty():
             return
         else:
             """
             def processor(logger, prefix, work_queue,
-                          finish_queue=None, thread_name=None,
-                          XXsleep=0, env=False, XXgetfile=False, XXpostfile=False,
+                          finish_queue=None, thread_name=None, XXsleep=0, 
+                          attack=False, env=False, XXgetfile=False, XXpostfile=False, 
                           temp_dir=None, XXpostfile_path=None):
             """
             processor(logger, prefix, work_queue, finish_queue=finish_queue, thread_name=thread_name,
-                      env=env, temp_dir=temp_dir)
+                      attack=attack, env=env, temp_dir=temp_dir)
 
 
-def threads_run(prefix, request_list=None, repeat_num=1, thread_num=5, logger=None, env=False, temp_dir=None):
+def threads_run(prefix, request_list=None, repeat_num=1, thread_num=5, logger=None, attack=False, env=False, temp_dir=None):
     if logger is None: logger = set_logger("threads_run")
 
     # create message queue
@@ -42,8 +42,8 @@ def threads_run(prefix, request_list=None, repeat_num=1, thread_num=5, logger=No
         thread_list.append('Thread-' + str(i))
     threads = []  # thread pool
     for tName in thread_list:  # create new thread
-        """def worker(logger, prefix, work_queue, finish_queue, env, thread_name, temp_dir)"""
-        thread = threading.Thread(target=worker, args=(logger, prefix, work_queue, finish_queue, env, tName, temp_dir))
+        """def worker(logger, prefix, work_queue, finish_queue, attack, env, thread_name, temp_dir)"""
+        thread = threading.Thread(target=worker, args=(logger, prefix, work_queue, finish_queue, attack, env, tName, temp_dir))
         threads.append(thread)
 
     """def counter(finish_queue, initial_size, bar=None):"""
