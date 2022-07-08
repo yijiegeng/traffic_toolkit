@@ -72,5 +72,9 @@
 	"dev3-aws":{
 		"lb-ip":["18.223.71.73", "18.217.67.129"],
 		"lb-region":["us-east-2"]
+	},
+	"test":{
+		"lb-ip":["52.78.82.9"],
+		"lb-region":["ygeng-origin-server"]
 	}
 }

@@ -39,6 +39,8 @@ def requests_sender(logger, prefix, url, para="", method=Method.GET, headers=Non
 
 def curl_sender(logger, temp_dir, prefix, url, ip, thread_name=None, postfile_path=None):
     host = info_getter.get_host(prefix)
+    port = ":443" if ":" not in host else ""
+
     if thread_name is not None:
         temp_dir = os_validator.create_dir(temp_dir + thread_name)
 
@@ -49,14 +51,14 @@ def curl_sender(logger, temp_dir, prefix, url, ip, thread_name=None, postfile_pa
     try:
         if postfile_path is None:
             # GET
-            subprocess.call('curl "https://%s" --resolve %s:443:%s --insecure --silent --show-error --connect-timeout 5'
+            subprocess.call('curl "https://%s" --resolve %s:%s --insecure --silent --show-error --connect-timeout 5'
                             ' --output %s --dump-header %s --stderr %s'
-                            % (host + url, host, ip, output_file, header_file, error_file), shell=True)
+                            % (host + url, host + port, ip, output_file, header_file, error_file), shell=True)
         else:
             # POST
-            subprocess.call('curl "https://%s" --resolve %s:443:%s --insecure --silent --show-error --connect-timeout 10'
+            subprocess.call('curl "https://%s" --resolve %s:%s --insecure --silent --show-error --connect-timeout 10'
                             ' --output %s --dump-header %s --stderr %s -F "file=@%s"'
-                            % (host + url, host, ip, output_file, header_file, error_file, postfile_path), shell=True)
+                            % (host + url, host + port, ip, output_file, header_file, error_file, postfile_path), shell=True)
 
     except Exception as e:
         logger.error("CURL Running Failed: %s" % e)

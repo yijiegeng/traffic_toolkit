@@ -1,3 +1,4 @@
+import os
 from optparse import OptionParser
 from repo import my_enum, attack_info
 from handler import executor
@@ -119,7 +120,8 @@ def execute(options, method):
     else:
         executor.visit_slow(domain, url=url, method=method, repeat_num=repeat_num, sleep=sleep)
 
-    os_validator.delete_dir("cache")
+    if os.path.exists("cache") and len(os.listdir("cache")) == 0:
+        os_validator.delete_dir("cache")
 
 
 if __name__ == "__main__":
