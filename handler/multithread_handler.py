@@ -40,15 +40,17 @@ def threads_run(prefix, request_list=None, repeat_num=1, thread_num=5, logger=No
     thread_list = []  # create thread_name
     for i in range(thread_num):
         thread_list.append('Thread-' + str(i))
-    threads = []  # thread pool
-    for tName in thread_list:  # create new thread
-        """def worker(logger, prefix, work_queue, finish_queue, attack, env, thread_name, temp_dir)"""
-        thread = threading.Thread(target=worker, args=(logger, prefix, work_queue, finish_queue, attack, env, tName, temp_dir))
-        threads.append(thread)
+
+    threads = []  # threads pool
 
     """def counter(finish_queue, initial_size, bar=None):"""
     thread = threading.Thread(target=counter, args=(finish_queue, initial_size))
     threads.append(thread)
+
+    for tName in thread_list:  # create new thread
+        """def worker(logger, prefix, work_queue, finish_queue, attack, env, thread_name, temp_dir)"""
+        thread = threading.Thread(target=worker, args=(logger, prefix, work_queue, finish_queue, attack, env, tName, temp_dir))
+        threads.append(thread)
 
     for t in threads:  # waiting for all threads start
         t.start()
