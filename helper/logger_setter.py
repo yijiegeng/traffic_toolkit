@@ -6,6 +6,8 @@ from repo import my_enum
 def set_logger(func_name):
     file_name = os_validator.get_logpath(func_name)
     logger = logging.getLogger()
+    logger.handlers.clear()     # clear all handlers
+
     logger.setLevel('INFO')
     BASIC_FORMAT = '%(asctime)s [%(filename)s - %(funcName)s:%(lineno)d] [%(levelname)s] : %(message)s'
     DATE_FORMAT = '%y-%m-%d %H:%M:%S'
