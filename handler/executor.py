@@ -48,25 +48,25 @@ def post_file(prefix: str, post_size: int, repeat_num: int, sleep: int, logger=N
 
 
 @decorator.log_title(my_enum.Mode.env_slow)
-def visit_env_slow(prefix: str, url: str, env_name: str, repeat_num: int, sleep: int, logger=None):
-    temp_dir, nodelist = get_env_node(url, env_name, logger)
+def visit_env_slow(prefix: str, url: str, env_name: str, region: str, repeat_num: int, sleep: int, logger=None):
+    temp_dir, nodelist = get_env_node(url, env_name, region, logger)
     normal_run(prefix, request_list=nodelist, repeat_num=repeat_num, sleep=sleep, logger=logger, env=True, temp_dir=temp_dir)
     os_validator.delete_dir(temp_dir)
 
 
 @decorator.log_title(my_enum.Mode.getfile_env)
-def get_file_env(prefix: str, env_name: str, get_size: int, repeat_num: int, sleep: int, logger=None):
+def get_file_env(prefix: str, env_name: str, region: str, get_size: int, repeat_num: int, sleep: int, logger=None):
     url = "/file?size=%s&unit=mb" % get_size
-    temp_dir, nodelist = get_env_node(url, env_name, logger)
+    temp_dir, nodelist = get_env_node(url, env_name, region, logger)
     normal_run(prefix, request_list=nodelist, repeat_num=repeat_num, sleep=sleep, logger=logger, env=True, getfile=True, temp_dir=temp_dir)
     os_validator.delete_dir(temp_dir)
 
 
 @decorator.log_title(my_enum.Mode.postfile_env)
-def post_file_env(prefix: str, env_name: str, post_size: int, repeat_num: int, sleep: int, logger=None):
+def post_file_env(prefix: str, env_name: str, region: str, post_size: int, repeat_num: int, sleep: int, logger=None):
     url = "/file?size=%s&unit=mb" % post_size
     postfile_path = os_validator.creat_postfile(post_size, "mb")
-    temp_dir, nodelist = get_env_node(url, env_name, logger)
+    temp_dir, nodelist = get_env_node(url, env_name, region, logger)
     normal_run(prefix, request_list=nodelist, repeat_num=repeat_num, sleep=sleep, logger=logger,
                env=True, postfile=True, temp_dir=temp_dir, postfile_path=postfile_path)
     os_validator.delete_dir(temp_dir)
@@ -98,16 +98,16 @@ def visit_attack_fast(prefix: str, repeat_num: int, thread_num: int, logger=None
 
 
 @decorator.log_title(my_enum.Mode.env_fast)
-def visit_env_fast(prefix: str, url: str, env_name: str, repeat_num: int, thread_num: int, logger=None):
-    temp_dir, nodelist = get_env_node(url, env_name, logger)
+def visit_env_fast(prefix: str, url: str, env_name: str, region: str, repeat_num: int, thread_num: int, logger=None):
+    temp_dir, nodelist = get_env_node(url, env_name, region, logger)
     threads_run(prefix, request_list=nodelist, repeat_num=repeat_num, thread_num=thread_num, logger=logger, env=True, temp_dir=temp_dir)
     os_validator.delete_dir(temp_dir)
 
 
 ################## helper functions
-def get_env_node(url: str, env_name: str, logger):
+def get_env_node(url: str, env_name: str, region: str, logger):
     temp_dir = os_validator.create_dir("cache/temp", repeat=True)
-    ips, regions = info_getter.get_lb(env_name, logger)
+    ips, regions = info_getter.get_lb(env_name, region, logger=logger)
     nodelist = []
     for ip_pos, ip in enumerate(ips):
         node = my_node.requestNode(url, waf_ip=ip, region=regions[int(ip_pos / 2)])
