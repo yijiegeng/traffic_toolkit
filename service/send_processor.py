@@ -84,10 +84,8 @@ def processor(logger, prefix, work_queue,
                                 response_size=response_size,
                                 request_size=request_size)
 
-        if attack and str(code) != "403":
-            logger.warning(info_log)
-        else:
-            logger.info(info_log)
+
+        logger.info(info_log)
     except Exception as e:
         logger.warning(error_handler(url, e, index, sleep,
                                      qsize=qsize,
