@@ -13,7 +13,7 @@ while True:
 print("start!")
 start = time.time()
 
-for _ in range(1):
+for _ in range(3):
 	executor.visit_attack_fast(domain, repeat_num=repeat_num, thread_num=thread_num)
 
 end = time.time()
