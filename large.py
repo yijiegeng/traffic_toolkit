@@ -1,13 +1,13 @@
 from handler import executor
 import time
 
-domain = "http://ygeng-onpremise2.fortiweb-cloud-test.com:1001"
-repeat_num = 1000
-thread_num = 1000
+domain = "http://3.71.73.94/"
+repeat_num = 3000
+thread_num = 3000
 
 while True:
 	t = time.time()
-	if t >= 1660777200:
+	if t >= 1660782000:
 		break
 
 print("start!")
