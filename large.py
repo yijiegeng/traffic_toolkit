@@ -1,7 +1,7 @@
 from handler import executor
 import time
 
-domain = "http://3.71.73.94/"
+domain = "http://20.234.81.219/"
 repeat_num = 3000
 thread_num = 3000
 
