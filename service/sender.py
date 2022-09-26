@@ -4,6 +4,7 @@ import requests
 import urllib3
 from repo.my_enum import Method
 from helper import os_validator, info_getter
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -30,7 +31,7 @@ def requests_sender(logger, prefix, url, para="", method=Method.GET, headers=Non
 
     headers = resp.headers
     code = resp.status_code
-    waf_ip = headers["WAF-ip"] if "WAF-ip" in headers else None
+    waf_ip = headers["WAF-ip"] if "WAF-ip" in headers else parse_waf_ip(resp.content.decode("utf-8"), logger)
     response_size = headers["Content-Length"] if "Content-Length" in headers else len(resp.content)
     request_size = headers["Request-Size"] if "Request-Size" in headers else 0
 
@@ -64,7 +65,7 @@ def curl_sender(logger, temp_dir, prefix, url, ip, thread_name=None, postfile_pa
         logger.error("CURL Running Failed: %s" % e)
         raise
 
-    (code, waf_ip, response_size, request_size, console_emsg) = pars_output(logger, header_file, error_file)
+    (code, waf_ip, response_size, request_size, console_emsg) = pars_output(logger, header_file, error_file, output_file)
 
     if console_emsg is not None:
         raise Exception(console_emsg)
@@ -76,7 +77,7 @@ def curl_sender(logger, temp_dir, prefix, url, ip, thread_name=None, postfile_pa
     return code, waf_ip, int(response_size), int(request_size)
 
 
-def pars_output(logger, header_file, error_file):
+def pars_output(logger, header_file, error_file, output_file):
     code = None
     ip = None
     response_size = None
@@ -93,6 +94,7 @@ def pars_output(logger, header_file, error_file):
         raise
 
     if not console_emsg:
+        # parse from header
         try:
             with open(header_file, "r") as f:
                 # fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -112,4 +114,28 @@ def pars_output(logger, header_file, error_file):
             logger.error("CURL [header_file] Parse Failed: %s" % e)
             raise
 
+        # parse from output
+        if ip is None:
+            try:
+                with open(output_file, "r") as f:
+                    lines = f.readlines()
+                    ip = parse_waf_ip(lines[0], logger)
+            except Exception as e:
+                logger.error("CURL [output_file] Parse Failed: %s" % e)
+                raise
+
     return code, ip, response_size, request_size, console_emsg
+
+
+def parse_waf_ip(content, logger):
+    try:
+        start = content.index('WAF-IP:')
+        end = content.index("<br/>", start)
+    except ValueError:
+        return None
+    except Exception as e:
+        logger.error("parse_waf_ip Failed: %s" % e)
+        raise
+
+    ip = content[start+8:end]
+    return ip

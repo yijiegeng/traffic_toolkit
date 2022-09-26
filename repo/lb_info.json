@@ -90,6 +90,20 @@
 			],
 		"lb-region":["us-east-1", "ap-southeast-1", "eu-central-1"]
 	},
+	"qa2-azure":{
+		"lb-ip":[
+			"20.198.131.155", "20.198.131.158",
+			"40.119.248.246", "40.119.249.42"
+			],
+		"lb-region":["southeastasia.1", "southeastasia"]
+	},
+	"qa2-gcp":{
+		"lb-ip":[
+			"34.124.204.103", "34.87.122.213",
+			"35.198.218.248", "34.124.246.222"
+			],
+		"lb-region":["asia-southeast1.1", "asia-southeast1"]
+	},
 	"dev3-aws":{
 		"lb-ip":["18.223.71.73", "18.217.67.129"],
 		"lb-region":["us-east-2"]

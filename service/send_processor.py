@@ -40,9 +40,9 @@ def processor(logger, prefix, work_queue,
         headers['Host'] = host
 
     # special attack cases
-    if url == "/lineComments":
+    if attack and url == "/lineComments":
         body = 'a=1 #'
-    elif url == "/jsVariable":
+    elif attack and url == "/jsVariable":
         body = 'id=hello";document.body.innerHTML="ddddd"//'
     else:
         body = None
