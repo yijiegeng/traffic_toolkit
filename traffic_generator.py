@@ -30,6 +30,8 @@ def main():
                       help="send_file mode: send a file, unit is MB")
     parser.add_option("-p", "--pfile", action="store", dest="post_size", type="int",
                       help="post_file mode: send a file and receive a file, unit is MB")
+    parser.add_option("-y", "--silence", action="store_true", dest="silence",
+                      help="silence mod: do NOT double check with paras")
 
     (options, args) = parser.parse_args()
 
@@ -62,9 +64,14 @@ def execute(options, method):
     attack = options.attack
     get_size = options.get_size
     post_size = options.post_size
+    silence = options.silence
 
     if post_size is not None: method = my_enum.Method.POST
     if sleep is None: sleep = 0
+
+    '''
+    concatenate input string 
+    '''
     hint = ">>>>>>>> %s [%s]\n>>>>>>>> repeat [%s] times" % (domain + url, method.value, repeat_num)
     if sleep != 0:
         hint += ", sleep [%s] seconds" % sleep
@@ -84,10 +91,14 @@ def execute(options, method):
     if post_size is not None:
         hint += " --> sending and receiving [%s] mb files" % post_size
 
-    s = input(hint + "\n[y/n] (press any key for yes):")
-    if s == "n":
-        print("Modify and run again.")
-        return
+    '''
+    double check with para
+    '''
+    if not silence:
+        s = input(hint + "\n[y/n] (press any key for yes):")
+        if s == "n":
+            print("Modify and run again.")
+            return
 
     ####### attack-slow mod #######
     if attack and (thread_num is None):
